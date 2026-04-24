@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using car_prices.Models;
 using Microsoft.Extensions.Logging;
@@ -6,21 +7,28 @@ namespace car_prices.Services;
 
 public class NettiautoService(HttpClient httpClient, ILogger<NettiautoService> logger)
 {
-    // Nettix REST API for saved search P649130595 (Volvo EX30)
-    private const string SearchUrl = "https://www.nettiauto.com/hakutulokset?haku=P649130595";
+    private const string TokenUrl = "https://auth.nettix.fi/oauth2/token";
+    private const string SearchUrl = "https://api.nettix.fi/rest/car/search?make=75&model=3630&priceFrom=15000&kilometersTo=80000&rows=100&sortBy=price&sortOrder=asc";
 
-    // Direct API endpoint as fallback — filters for Volvo EX30
-    private const string ApiUrl = "https://api.nettix.fi/rest/car/search?make=75&model=3630&rows=100&sortBy=price&sortOrder=asc";
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+    };
 
     public async Task<List<CarListing>> FetchListingsAsync(CancellationToken ct = default)
     {
         logger.LogInformation("Fetching listings from Nettiauto");
 
-        var response = await httpClient.GetAsync(ApiUrl, ct);
+        var token = await GetAccessTokenAsync(ct);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, SearchUrl);
+        request.Headers.Add("X-Access-Token", token);
+
+        var response = await httpClient.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
         var ads = await JsonSerializer.DeserializeAsync<List<NettiautoAd>>(
-            await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+            await response.Content.ReadAsStreamAsync(ct), JsonOptions, ct);
 
         if (ads is null)
         {
@@ -34,7 +42,7 @@ public class NettiautoService(HttpClient httpClient, ILogger<NettiautoService> l
         return ads.Select(ad => new CarListing
         {
             PartitionKey = "nettiauto",
-            RowKey = ad.Id.ToString(),
+            RowKey = ad.Id,
             Title = BuildTitle(ad),
             Price = ad.Price,
             Currency = ad.Currency ?? "EUR",
@@ -50,6 +58,27 @@ public class NettiautoService(HttpClient httpClient, ILogger<NettiautoService> l
             FirstSeenAt = now,
             LastSeenAt = now
         }).ToList();
+    }
+
+    private async Task<string> GetAccessTokenAsync(CancellationToken ct)
+    {
+        var clientId = Environment.GetEnvironmentVariable("NettiautoClientId")
+            ?? throw new InvalidOperationException("NettiautoClientId not configured");
+        var clientSecret = Environment.GetEnvironmentVariable("NettiautoClientSecret")
+            ?? throw new InvalidOperationException("NettiautoClientSecret not configured");
+
+        var content = new FormUrlEncodedContent([
+            new("grant_type", "client_credentials"),
+            new("client_id", clientId),
+            new("client_secret", clientSecret)
+        ]);
+
+        var response = await httpClient.PostAsync(TokenUrl, content, ct);
+        response.EnsureSuccessStatusCode();
+
+        var tokenResponse = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
+        return tokenResponse.GetProperty("access_token").GetString()
+            ?? throw new InvalidOperationException("No access_token in response");
     }
 
     private static string BuildTitle(NettiautoAd ad)

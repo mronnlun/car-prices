@@ -15,7 +15,22 @@
       "Bash(func init:*)",
       "Bash(dotnet add:*)",
       "Bash(dotnet build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(azurite --version)",
+      "Bash(npm list:*)",
+      "Bash(azurite:*)",
+      "Bash(func start:*)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://www.blocket.se/mobility/search/api/search/SEARCH_ID_CAR_USED?variant=1.818.2000653&sort=PRICE_ASC&price_from=160000&mileage_to=8000&price_to=350000&rows=2\")",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -I \"https://api.nettix.fi/rest/car/search?make=75&model=3630&rows=1\")",
+      "Bash(curl -s \"https://www.nettiauto.com/api/search/P649130595\" -H \"Accept: application/json\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -s -L \"https://www.nettiauto.com/hakutulokset?haku=P649130595\" -H \"Accept: application/json\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //IM \"func.exe\")",
+      "Bash(taskkill //F //IM \"dotnet.exe\")",
+      "Bash(ls:*)"
     ]
   }
 }

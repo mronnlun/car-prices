@@ -43,9 +43,11 @@ Requires `local.settings.json` with `AzureWebJobsStorage` (defaults to `UseDevel
 
 CD uses workload identity federation (OIDC). Required GitHub secrets: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
 
+`host.json` limits concurrency to 1 function execution, and Bicep sets `functionAppScaleLimit: 1` to prevent multiple instances.
+
 ## Architecture
 
-- `Functions/CarPriceScraperFunction.cs` — Timer-triggered (every 6 hours), orchestrates both scrapers in parallel
+- `Functions/CarPriceScraperFunction.cs` — Timer-triggered (every 6 hours, `RunOnStartup=true`), orchestrates both scrapers in parallel
 - `Services/NettiautoService.cs` — Fetches from Nettix REST API, maps to `CarListing`
 - `Services/BlocketService.cs` — Fetches from Blocket mobility API, maps to `CarListing`
 - `Services/CarListingStore.cs` — Upserts listings to Azure Table Storage, preserving `FirstSeenAt` for existing records
@@ -57,6 +59,8 @@ Services are registered via DI in `Program.cs` using typed `HttpClient` instance
 ## Data Sources
 
 - **Nettiauto API**: `https://api.nettix.fi/rest/car/search` — Swagger docs at `https://api.nettix.fi/docs/car/`
+  - Requires OAuth2 client credentials (`NettiautoClientId`, `NettiautoClientSecret`) — token endpoint: `https://auth.nettix.fi/oauth2/token`
+  - API returns mixed JSON types (ad `id` is string, option `id` is number) — deserialized with `JsonNumberHandling.AllowReadingFromString`
 - **Blocket API**: Internal mobility search endpoint at `blocket.se/mobility/search/api/search/SEARCH_ID_CAR_USED`
   - Blocket may require a browser-like User-Agent header
   - Prices in SEK; mileage reported in Swedish miles (1 mil = 10 km)

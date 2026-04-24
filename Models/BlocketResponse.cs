@@ -14,53 +14,53 @@ public class BlocketSearchResponse
 public class BlocketAd
 {
     [JsonPropertyName("ad_id")]
-    public string? AdId { get; set; }
+    public long? AdId { get; set; }
 
-    [JsonPropertyName("subject")]
-    public string? Subject { get; set; }
+    [JsonPropertyName("heading")]
+    public string? Heading { get; set; }
 
     [JsonPropertyName("price")]
     public BlocketPrice? Price { get; set; }
 
-    [JsonPropertyName("parameters")]
-    public List<BlocketParameter> Parameters { get; set; } = [];
-
-    [JsonPropertyName("share_url")]
-    public string? ShareUrl { get; set; }
-
     [JsonPropertyName("location")]
-    public List<BlocketLocation> Location { get; set; } = [];
+    public string? Location { get; set; }
 
-    [JsonPropertyName("list_time")]
-    public string? ListTime { get; set; }
+    [JsonPropertyName("canonical_url")]
+    public string? CanonicalUrl { get; set; }
 
-    public string? GetParameter(string label)
-    {
-        return Parameters.FirstOrDefault(p =>
-            string.Equals(p.Label, label, StringComparison.OrdinalIgnoreCase))?.Value;
-    }
+    [JsonPropertyName("year")]
+    public int? Year { get; set; }
+
+    [JsonPropertyName("mileage")]
+    public int? Mileage { get; set; }
+
+    [JsonPropertyName("mileage_unit")]
+    public string? MileageUnit { get; set; }
+
+    [JsonPropertyName("make")]
+    public string? Make { get; set; }
+
+    [JsonPropertyName("model")]
+    public string? Model { get; set; }
+
+    [JsonPropertyName("model_specification")]
+    public string? ModelSpecification { get; set; }
+
+    [JsonPropertyName("fuel")]
+    public string? Fuel { get; set; }
+
+    [JsonPropertyName("transmission")]
+    public string? Transmission { get; set; }
+
+    [JsonPropertyName("timestamp")]
+    public long? Timestamp { get; set; }
 }
 
 public class BlocketPrice
 {
-    [JsonPropertyName("value")]
-    public int? Value { get; set; }
+    [JsonPropertyName("amount")]
+    public int? Amount { get; set; }
 
-    [JsonPropertyName("suffix")]
-    public string? Suffix { get; set; }
-}
-
-public class BlocketParameter
-{
-    [JsonPropertyName("label")]
-    public string? Label { get; set; }
-
-    [JsonPropertyName("value")]
-    public string? Value { get; set; }
-}
-
-public class BlocketLocation
-{
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    [JsonPropertyName("currency_code")]
+    public string? CurrencyCode { get; set; }
 }

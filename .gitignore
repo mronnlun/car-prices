@@ -4,6 +4,12 @@
 # Azure Functions localsettings file
 local.settings.json
 
+# Azurite local storage emulator
+__azurite_db_*
+
+# Claude Code local settings
+.claude/settings.local.json
+
 # User-specific files
 *.suo
 *.user

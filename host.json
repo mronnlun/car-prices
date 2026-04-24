@@ -1,5 +1,14 @@
 {
     "version": "2.0",
+    "concurrency": {
+        "maximumFunctionConcurrency": 1
+    },
+    "extensions": {
+        "timers": {
+            "maxConcurrentCalls": 1
+        }
+    },
+    "functionTimeout": "00:10:00",
     "logging": {
         "applicationInsights": {
             "samplingSettings": {

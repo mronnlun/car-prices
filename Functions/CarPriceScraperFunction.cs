@@ -12,7 +12,7 @@ public class CarPriceScraperFunction(
 {
     [Function("CarPriceScraper")]
     public async Task Run(
-        [TimerTrigger("0 0 */6 * * *")] TimerInfo timerInfo,
+        [TimerTrigger("0 0 */6 * * *", RunOnStartup = true)] TimerInfo timerInfo,
         CancellationToken ct)
     {
         logger.LogInformation("Car price scraper started at {Time}", DateTimeOffset.UtcNow);

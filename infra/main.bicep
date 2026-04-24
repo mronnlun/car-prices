@@ -6,6 +6,14 @@ param environment string
 @description('Azure region for all resources')
 param location string = resourceGroup().location
 
+@secure()
+@description('Nettiauto API client ID')
+param nettiautoClientId string
+
+@secure()
+@description('Nettiauto API client secret')
+param nettiautoClientSecret string
+
 var projectName = 'CarPrices'
 var prefix = '${projectName}-${environment}'
 // Storage accounts: lowercase, no hyphens, 3-24 chars
@@ -78,6 +86,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
+      functionAppScaleLimit: 1
       netFrameworkVersion: 'v10.0'
       appSettings: [
         {
@@ -103,6 +112,14 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'NettiautoClientId'
+          value: nettiautoClientId
+        }
+        {
+          name: 'NettiautoClientSecret'
+          value: nettiautoClientSecret
         }
       ]
     }

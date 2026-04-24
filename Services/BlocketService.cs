@@ -9,7 +9,7 @@ public class BlocketService(HttpClient httpClient, ILogger<BlocketService> logge
     private const string SearchUrl =
         "https://www.blocket.se/mobility/search/api/search/SEARCH_ID_CAR_USED" +
         "?variant=1.818.2000653&sort=PRICE_ASC&price_from=160000&mileage_to=8000" +
-        "&price_to=350000&rows=50";
+        "&price_to=400000&rows=50";
 
     public async Task<List<CarListing>> FetchListingsAsync(CancellationToken ct = default)
     {
@@ -39,43 +39,39 @@ public class BlocketService(HttpClient httpClient, ILogger<BlocketService> logge
             .Select(ad => new CarListing
             {
                 PartitionKey = "blocket",
-                RowKey = ad.AdId!,
-                Title = ad.Subject ?? "",
-                Price = ad.Price?.Value,
-                Currency = "SEK",
-                Year = ParseInt(ad.GetParameter("Modellår") ?? ad.GetParameter("year")),
-                Mileage = ParseMileage(ad.GetParameter("Miltal") ?? ad.GetParameter("mileage")),
-                FuelType = ad.GetParameter("Drivmedel") ?? ad.GetParameter("fuel") ?? "",
-                GearType = ad.GetParameter("Växellåda") ?? ad.GetParameter("gearbox") ?? "",
-                Color = ad.GetParameter("Färg") ?? ad.GetParameter("color") ?? "",
-                Location = string.Join(", ", ad.Location.Select(l => l.Name).Where(n => n is not null)),
-                Url = ad.ShareUrl ?? "",
+                RowKey = ad.AdId!.Value.ToString(),
+                Title = BuildTitle(ad),
+                Price = ad.Price?.Amount,
+                Currency = ad.Price?.CurrencyCode ?? "SEK",
+                Year = ad.Year,
+                Mileage = ConvertMileage(ad.Mileage, ad.MileageUnit),
+                FuelType = ad.Fuel ?? "",
+                GearType = ad.Transmission ?? "",
+                Color = "",
+                Location = ad.Location ?? "",
+                Url = ad.CanonicalUrl ?? "",
                 Status = "forsale",
-                ListingDate = ParseDate(ad.ListTime),
+                ListingDate = ad.Timestamp is not null
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(ad.Timestamp.Value)
+                    : null,
                 FirstSeenAt = now,
                 LastSeenAt = now
             }).ToList();
     }
 
-    private static int? ParseInt(string? value)
+    private static string BuildTitle(BlocketAd ad)
     {
-        if (string.IsNullOrEmpty(value)) return null;
-        var digits = new string(value.Where(char.IsDigit).ToArray());
-        return int.TryParse(digits, out var result) ? result : null;
+        if (!string.IsNullOrEmpty(ad.ModelSpecification))
+            return $"{ad.Make} {ad.Model} {ad.ModelSpecification}".Trim();
+        return $"{ad.Make} {ad.Model}".Trim();
     }
 
-    private static int? ParseMileage(string? value)
+    private static int? ConvertMileage(int? mileage, string? unit)
     {
-        if (string.IsNullOrEmpty(value)) return null;
-        // Blocket formats mileage like "1 234 mil" or "1234" — convert mil to km
-        var digits = new string(value.Where(char.IsDigit).ToArray());
-        if (!int.TryParse(digits, out var result)) return null;
-        // If value contains "mil" it's Swedish miles (1 mil = 10 km)
-        return value.Contains("mil", StringComparison.OrdinalIgnoreCase) ? result * 10 : result;
-    }
-
-    private static DateTimeOffset? ParseDate(string? value)
-    {
-        return DateTimeOffset.TryParse(value, out var result) ? result : null;
+        if (mileage is null) return null;
+        // SCANDINAVIAN_MILE = 10 km
+        return string.Equals(unit, "SCANDINAVIAN_MILE", StringComparison.OrdinalIgnoreCase)
+            ? mileage.Value * 10
+            : mileage.Value;
     }
 }

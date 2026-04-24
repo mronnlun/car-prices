@@ -5,7 +5,7 @@ namespace car_prices.Models;
 public class NettiautoAd
 {
     [JsonPropertyName("id")]
-    public int Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("make")]
     public NettiautoOption? Make { get; set; }

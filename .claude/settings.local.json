@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/mathi/.claude/**)",
+      "Bash(cat ~/.claude/mcp*.json)",
+      "WebSearch",
+      "Bash(claude mcp:*)",
+      "WebFetch(domain:www.blocket.se)",
+      "WebFetch(domain:www.nettiauto.com)",
+      "Bash(func --version)",
+      "Bash(dotnet --version)",
+      "WebFetch(domain:api.nettix.fi)",
+      "WebFetch(domain:blocket-api.se)",
+      "WebFetch(domain:github.com)",
+      "Bash(func init:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
